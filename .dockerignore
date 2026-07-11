@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+mlruns/
+mlartifacts/
+.git/
+.gitignore
+notebooks/
+*.ipynb
+*.md
+screenshots/
+logs/

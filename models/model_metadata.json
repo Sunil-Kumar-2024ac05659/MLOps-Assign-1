@@ -1,0 +1,27 @@
+{
+  "model_name": "LogisticRegression",
+  "metrics": {
+    "accuracy": 0.8852,
+    "precision": 0.8387,
+    "recall": 0.9286,
+    "f1": 0.8814,
+    "roc_auc": 0.9665
+  },
+  "num_features": [
+    "age",
+    "trestbps",
+    "chol",
+    "thalach",
+    "oldpeak"
+  ],
+  "cat_features": [
+    "sex",
+    "cp",
+    "fbs",
+    "restecg",
+    "exang",
+    "slope",
+    "ca",
+    "thal"
+  ]
+}
