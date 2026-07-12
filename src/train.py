@@ -213,6 +213,7 @@ def main():
     print(f"Numerical features  : {num_cols}")
     print(f"Categorical features: {cat_cols}")
 
+    mlflow.set_tracking_uri("mlruns")
     mlflow.set_experiment(EXPERIMENT_NAME)
 
     # ── Model 1: Logistic Regression ──────────────────────────────────────────

@@ -21,6 +21,7 @@ ENV/
 *.ipynb_checkpoints
 
 # MLflow (keep mlruns for experiment tracking evidence)
+mlruns/
 mlartifacts/
 
 # Models – keep joblib for API to load, ignore large pkl duplicates
