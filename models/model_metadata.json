@@ -1,11 +1,11 @@
 {
   "model_name": "LogisticRegression",
   "metrics": {
-    "accuracy": 0.8852,
-    "precision": 0.8387,
-    "recall": 0.9286,
-    "f1": 0.8814,
-    "roc_auc": 0.9665
+    "accuracy": 0.9211,
+    "precision": 0.9394,
+    "recall": 0.8857,
+    "f1": 0.9118,
+    "roc_auc": 0.9554
   },
   "num_features": [
     "age",

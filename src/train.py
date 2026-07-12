@@ -25,7 +25,7 @@ import mlflow.sklearn
 
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_validate
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
@@ -42,8 +42,8 @@ from src.data_processing import (
 DATA_PATH = os.path.join("data", "raw", "heart_disease.csv")
 MODEL_DIR = "models"
 EXPERIMENT_NAME = "heart-disease-classifier"
-CV_FOLDS = 5
-RANDOM_STATE = 42
+CV_FOLDS = 10
+RANDOM_STATE = 7
 
 
 # ── helper utilities ──────────────────────────────────────────────────────────
@@ -220,8 +220,12 @@ def main():
     preprocessor_lr = build_preprocessing_pipeline(num_cols, cat_cols)
     lr_result = train_model(
         name="LogisticRegression",
-        classifier=LogisticRegression(max_iter=1000, random_state=RANDOM_STATE),
-        param_grid={"C": [0.01, 0.1, 1.0, 10.0], "solver": ["lbfgs", "liblinear"]},
+        classifier=LogisticRegression(max_iter=2000, random_state=RANDOM_STATE),
+        param_grid={
+            "C": [0.001, 0.01, 0.1, 1.0, 5.0],
+            "solver": ["lbfgs", "saga"],
+            "penalty": ["l2"],
+        },
         X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test,
         preprocessor=preprocessor_lr,
         tmp_dir=tmp_dir,
@@ -233,9 +237,10 @@ def main():
         name="RandomForest",
         classifier=RandomForestClassifier(random_state=RANDOM_STATE),
         param_grid={
-            "n_estimators": [100, 200],
-            "max_depth": [None, 5, 10],
-            "min_samples_split": [2, 5],
+            "n_estimators": [150, 300],
+            "max_depth": [None, 8, 15],
+            "min_samples_split": [2, 4],
+            "max_features": ["sqrt", "log2"],
         },
         X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test,
         preprocessor=preprocessor_rf,
@@ -250,17 +255,34 @@ def main():
             eval_metric="logloss", random_state=RANDOM_STATE, verbosity=0
         ),
         param_grid={
-            "n_estimators": [100, 200],
-            "max_depth": [3, 5, 7],
-            "learning_rate": [0.05, 0.1],
+            "n_estimators": [150, 300],
+            "max_depth": [3, 6, 9],
+            "learning_rate": [0.01, 0.05, 0.1],
+            "subsample": [0.8, 1.0],
         },
         X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test,
         preprocessor=preprocessor_xgb,
         tmp_dir=tmp_dir,
     )
 
+    # ── Model 4: Gradient Boosting ────────────────────────────────────────────
+    preprocessor_gb = build_preprocessing_pipeline(num_cols, cat_cols)
+    gb_result = train_model(
+        name="GradientBoosting",
+        classifier=GradientBoostingClassifier(learning_rate=0.1, random_state=RANDOM_STATE),
+        param_grid={
+            "n_estimators": [100, 200],
+            "max_depth": [3, 5],
+            "learning_rate": [0.05, 0.1, 0.2],
+            "min_samples_split": [2, 5],
+        },
+        X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test,
+        preprocessor=preprocessor_gb,
+        tmp_dir=tmp_dir,
+    )
+
     # ── Select best model by ROC-AUC and save ────────────────────────────────
-    results = [lr_result, rf_result, xgb_result]
+    results = [lr_result, rf_result, xgb_result, gb_result]
     best = max(results, key=lambda r: r["metrics"]["roc_auc"])
     print(f"\nBest model: {best['name']}  (ROC-AUC = {best['metrics']['roc_auc']:.4f})")
 

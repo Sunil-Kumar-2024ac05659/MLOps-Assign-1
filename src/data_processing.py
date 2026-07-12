@@ -43,7 +43,7 @@ def get_feature_columns(df: pd.DataFrame) -> Tuple[list, list]:
 def build_preprocessing_pipeline(num_cols: list, cat_cols: list) -> ColumnTransformer:
     """Build a ColumnTransformer with imputation + scaling/encoding."""
     numerical_transformer = Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),
+        ("imputer", SimpleImputer(strategy="mean")),
         ("scaler", StandardScaler()),
     ])
 
@@ -64,8 +64,8 @@ def build_preprocessing_pipeline(num_cols: list, cat_cols: list) -> ColumnTransf
 
 def prepare_data(
     csv_path: str,
-    test_size: float = 0.2,
-    random_state: int = 42,
+    test_size: float = 0.25,
+    random_state: int = 7,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     """Full data prep: load → clean → split. Returns X_train, X_test, y_train, y_test."""
     df = load_raw_data(csv_path)
