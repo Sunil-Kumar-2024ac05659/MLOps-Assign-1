@@ -1,6 +1,5 @@
 """Unit tests for data_processing.py"""
 
-import pytest
 import numpy as np
 import pandas as pd
 

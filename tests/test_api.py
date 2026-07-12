@@ -2,7 +2,6 @@
 
 import os
 import pytest
-import joblib
 from fastapi.testclient import TestClient
 
 

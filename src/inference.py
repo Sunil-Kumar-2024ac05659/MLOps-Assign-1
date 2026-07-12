@@ -3,7 +3,6 @@
 import os
 import joblib
 import pandas as pd
-import numpy as np
 from typing import Union
 
 MODEL_PATH = os.path.join("models", "best_model.joblib")
@@ -35,6 +34,6 @@ def predict(
         "confidence": round(confidence, 4),
         "probabilities": {
             "no_disease": round(float(proba[0]), 4),
-            "disease":    round(float(proba[1]), 4),
+            "disease": round(float(proba[1]), 4),
         },
     }

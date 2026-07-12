@@ -14,11 +14,6 @@ import sys
 import json
 import joblib
 import numpy as np
-import pandas as pd
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 import mlflow
 import mlflow.sklearn
@@ -34,10 +29,14 @@ from sklearn.metrics import (
 from xgboost import XGBClassifier
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.data_processing import (
+from src.data_processing import (  # noqa: E402
     prepare_data, build_preprocessing_pipeline, get_feature_columns,
-    NUMERICAL_FEATURES, CATEGORICAL_FEATURES,
 )
+
+import matplotlib  # noqa: E402
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+import seaborn as sns  # noqa: E402
 
 DATA_PATH = os.path.join("data", "raw", "heart_disease.csv")
 MODEL_DIR = "models"
@@ -50,11 +49,11 @@ RANDOM_STATE = 7
 
 def compute_metrics(y_true, y_pred, y_prob) -> dict:
     return {
-        "accuracy":  accuracy_score(y_true, y_pred),
+        "accuracy": accuracy_score(y_true, y_pred),
         "precision": precision_score(y_true, y_pred, zero_division=0),
-        "recall":    recall_score(y_true, y_pred, zero_division=0),
-        "f1":        f1_score(y_true, y_pred, zero_division=0),
-        "roc_auc":   roc_auc_score(y_true, y_prob),
+        "recall": recall_score(y_true, y_pred, zero_division=0),
+        "f1": f1_score(y_true, y_pred, zero_division=0),
+        "roc_auc": roc_auc_score(y_true, y_prob),
     }
 
 
@@ -152,7 +151,7 @@ def train_model(
         )
         for metric in ["accuracy", "precision", "recall", "f1", "roc_auc"]:
             mlflow.log_metric(f"cv_{metric}_mean", cv_results[f"test_{metric}"].mean())
-            mlflow.log_metric(f"cv_{metric}_std",  cv_results[f"test_{metric}"].std())
+            mlflow.log_metric(f"cv_{metric}_std", cv_results[f"test_{metric}"].std())
 
         # Test-set evaluation
         y_pred = best_pipeline.predict(X_test)

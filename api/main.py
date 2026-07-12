@@ -21,7 +21,7 @@ from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_
 from starlette.responses import Response
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.inference import load_model, predict
+from src.inference import load_model, predict  # noqa: E402
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(

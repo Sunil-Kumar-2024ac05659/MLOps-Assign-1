@@ -7,8 +7,6 @@ import pytest
 import numpy as np
 import pandas as pd
 import joblib
-import os
-import tempfile
 
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
@@ -27,19 +25,19 @@ def sample_df():
     rng = np.random.default_rng(42)
     n = 50
     data = {
-        "age":      rng.integers(30, 75, n).astype(float),
-        "sex":      rng.integers(0, 2, n).astype(float),
-        "cp":       rng.integers(0, 4, n).astype(float),
+        "age": rng.integers(30, 75, n).astype(float),
+        "sex": rng.integers(0, 2, n).astype(float),
+        "cp": rng.integers(0, 4, n).astype(float),
         "trestbps": rng.integers(90, 180, n).astype(float),
-        "chol":     rng.integers(150, 350, n).astype(float),
-        "fbs":      rng.integers(0, 2, n).astype(float),
-        "restecg":  rng.integers(0, 3, n).astype(float),
-        "thalach":  rng.integers(80, 200, n).astype(float),
-        "exang":    rng.integers(0, 2, n).astype(float),
-        "oldpeak":  rng.uniform(0, 6, n).round(1),
-        "slope":    rng.integers(0, 3, n).astype(float),
-        "ca":       rng.integers(0, 4, n).astype(float),
-        "thal":     rng.integers(0, 4, n).astype(float),
+        "chol": rng.integers(150, 350, n).astype(float),
+        "fbs": rng.integers(0, 2, n).astype(float),
+        "restecg": rng.integers(0, 3, n).astype(float),
+        "thalach": rng.integers(80, 200, n).astype(float),
+        "exang": rng.integers(0, 2, n).astype(float),
+        "oldpeak": rng.uniform(0, 6, n).round(1),
+        "slope": rng.integers(0, 3, n).astype(float),
+        "ca": rng.integers(0, 4, n).astype(float),
+        "thal": rng.integers(0, 4, n).astype(float),
         TARGET_COL: rng.integers(0, 2, n),
     }
     return pd.DataFrame(data)

@@ -1,7 +1,6 @@
 """Unit tests for inference.py"""
 
 import pytest
-import numpy as np
 
 from src.inference import predict, load_model
 
