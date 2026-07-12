@@ -20,17 +20,15 @@ ENV/
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# MLflow
-mlruns/
+# MLflow (keep mlruns for experiment tracking evidence)
 mlartifacts/
 
-# Models
+# Models – keep joblib for API to load, ignore large pkl duplicates
 models/*.pkl
-models/*.joblib
 models/*.onnx
 
-# Data
-data/raw/*.csv
+# Data – keep CSV for reproducibility
+# data/raw/*.csv   ← intentionally tracked
 data/processed/*.csv
 
 # Logs
@@ -49,6 +47,3 @@ Thumbs.db
 # Environment
 .env
 *.env
-
-# Screenshots
-screenshots/*.png

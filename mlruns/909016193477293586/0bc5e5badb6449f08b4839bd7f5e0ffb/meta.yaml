@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/I349236/IMPL/shwetha/bits/sem_3/Mlops/sunil/MLOps-Assignment-1/mlruns/909016193477293586/0bc5e5badb6449f08b4839bd7f5e0ffb/artifacts
+end_time: 1783867777960
+entry_point_name: ''
+experiment_id: '909016193477293586'
+lifecycle_stage: active
+run_id: 0bc5e5badb6449f08b4839bd7f5e0ffb
+run_name: LogisticRegression
+run_uuid: 0bc5e5badb6449f08b4839bd7f5e0ffb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1783867760710
+status: 3
+tags: []
+user_id: I349236

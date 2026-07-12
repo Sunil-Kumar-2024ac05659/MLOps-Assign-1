@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MLOps Assignment 01 – Heart Disease Prediction Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 13px; color: #222; background: #fff; }
+  a { color: #1a0dab; }
+
+  /* ── page wrapper ── */
+  .page { max-width: 900px; margin: 0 auto; padding: 30px 40px 60px; }
+
+  /* ── title block ── */
+  .title-block { text-align: center; margin-bottom: 28px; }
+  .title-block h1 { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
+  .title-block .subtitle { font-size: 13px; color: #444; }
+
+  /* ── TOC ── */
+  .toc { border: 1px solid #ccc; padding: 16px 24px; margin-bottom: 30px; display: inline-block; min-width: 320px; }
+  .toc h2 { font-size: 14px; margin-bottom: 10px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 3px 0; }
+
+  /* ── sections ── */
+  h2.section-title { font-size: 15px; font-weight: bold; margin: 28px 0 10px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  h3.sub-title { font-size: 13px; font-weight: bold; margin: 14px 0 6px; }
+
+  p { margin: 6px 0 10px; line-height: 1.6; }
+  ul, ol { padding-left: 22px; margin-bottom: 10px; }
+  li { margin: 3px 0; line-height: 1.6; }
+
+  /* ── tables ── */
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 16px; font-size: 12.5px; }
+  th { background: #f0f0f0; border: 1px solid #bbb; padding: 6px 10px; text-align: left; }
+  td { border: 1px solid #bbb; padding: 5px 10px; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .highlight td { font-weight: bold; background: #e8f4e8 !important; }
+
+  /* ── code blocks ── */
+  pre { background: #f5f5f5; border: 1px solid #ddd; padding: 10px 14px; border-radius: 4px;
+        font-size: 11.5px; font-family: "Courier New", monospace; overflow-x: auto; margin: 8px 0 14px; white-space: pre-wrap; }
+  code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-family: "Courier New", monospace; font-size: 11.5px; }
+
+  /* ── metric cards ── */
+  .metric-grid { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0 16px; }
+  .metric-card { border: 1px solid #bbb; border-radius: 6px; padding: 10px 16px; min-width: 110px; text-align: center; }
+  .metric-card .val { font-size: 22px; font-weight: bold; color: #2c7a2c; }
+  .metric-card .label { font-size: 11px; color: #555; margin-top: 2px; }
+
+  /* ── arch diagram ── */
+  .arch-box { border: 1px solid #aaa; border-radius: 6px; padding: 16px; background: #fafafa;
+              font-family: "Courier New", monospace; font-size: 12px; line-height: 1.8; margin: 10px 0; }
+  .arch-box .arrow { color: #555; }
+
+  /* ── badge ── */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px;
+           font-weight: bold; margin-right: 4px; }
+  .badge-green { background: #d4edda; color: #155724; }
+  .badge-blue  { background: #d0e8ff; color: #004085; }
+  .badge-orange{ background: #ffecd0; color: #7d4e00; }
+
+  /* ── divider ── */
+  hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════════════════════════════════════════════════════ TITLE -->
+  <div class="title-block">
+    <h1>Heart Disease Prediction – MLOps Pipeline</h1>
+    <div class="subtitle">
+      MLOps Assignment 01 &nbsp;|&nbsp; BITS Pilani – AIMLCZG523<br/>
+      Student: Sunil Kumar &nbsp;|&nbsp; ID: 2024ac05659
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ TOC -->
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#s1">Project Overview</a></li>
+      <li><a href="#s2">Setup &amp; Installation Instructions</a></li>
+      <li><a href="#s3">Dataset &amp; EDA Findings</a></li>
+      <li><a href="#s4">Feature Engineering &amp; Modelling Choices</a></li>
+      <li><a href="#s5">Experiment Tracking Summary (MLflow)</a></li>
+      <li><a href="#s6">Model Packaging &amp; Reproducibility</a></li>
+      <li><a href="#s7">API Design</a></li>
+      <li><a href="#s8">System Architecture Diagram</a></li>
+      <li><a href="#s9">CI/CD Pipeline</a></li>
+      <li><a href="#s10">Containerisation &amp; Deployment</a></li>
+      <li><a href="#s11">Monitoring &amp; Logging</a></li>
+      <li><a href="#s12">Repository Link</a></li>
+    </ol>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ 1. PROJECT OVERVIEW -->
+  <h2 class="section-title" id="s1">1. Project Overview</h2>
+  <p>
+    This project implements an end-to-end MLOps pipeline for binary classification of heart disease
+    using the <strong>UCI Heart Disease Dataset</strong>. The pipeline covers every stage of the ML
+    lifecycle: data acquisition, exploratory data analysis, preprocessing, model training with
+    hyperparameter tuning, experiment tracking (MLflow), model packaging, REST API serving (FastAPI),
+    containerisation (Docker), Kubernetes deployment, CI/CD automation (GitHub Actions), and
+    production monitoring (Prometheus + Grafana).
+  </p>
+
+  <h3 class="sub-title">Objectives</h3>
+  <ul>
+    <li>Build a reproducible, production-grade ML pipeline following MLOps best practices.</li>
+    <li>Train and compare four classifiers; select the best by ROC-AUC.</li>
+    <li>Expose the model via a versioned REST API with health checks and Prometheus metrics.</li>
+    <li>Automate the entire workflow with GitHub Actions CI/CD.</li>
+    <li>Deploy to Kubernetes with liveness/readiness probes and resource limits.</li>
+  </ul>
+
+  <h3 class="sub-title">Tech Stack</h3>
+  <table>
+    <tr><th>Category</th><th>Tools / Libraries</th></tr>
+    <tr><td>Language</td><td>Python 3.11</td></tr>
+    <tr><td>ML / Data</td><td>scikit-learn 1.5.0, XGBoost 2.0.3, pandas 2.2.2, numpy 1.26.4</td></tr>
+    <tr><td>Experiment Tracking</td><td>MLflow 2.13.2</td></tr>
+    <tr><td>API</td><td>FastAPI 0.111.0, Uvicorn 0.30.1, Pydantic 2.7.2</td></tr>
+    <tr><td>Testing</td><td>pytest 8.2.2, pytest-cov 5.0.0, httpx 0.27.0</td></tr>
+    <tr><td>Containers</td><td>Docker, Docker Compose</td></tr>
+    <tr><td>Orchestration</td><td>Kubernetes (Minikube / cloud K8s)</td></tr>
+    <tr><td>Monitoring</td><td>Prometheus 0.20.0, Grafana</td></tr>
+    <tr><td>CI/CD</td><td>GitHub Actions</td></tr>
+    <tr><td>Linting</td><td>flake8 7.0.0</td></tr>
+  </table>
+
+  <!-- ════════════════════════════════════════════════════ 2. SETUP -->
+  <h2 class="section-title" id="s2">2. Setup &amp; Installation Instructions</h2>
+
+  <h3 class="sub-title">Prerequisites</h3>
+  <ul>
+    <li>Python 3.11+</li>
+    <li>Docker &amp; Docker Compose</li>
+    <li>kubectl + Minikube (optional, for Kubernetes deployment)</li>
+    <li>Git</li>
+  </ul>
+
+  <h3 class="sub-title">Step-by-step Installation</h3>
+
+  <p><strong>1. Clone the repository</strong></p>
+<pre>git clone https://github.com/Sunil-Kumar-2024ac05659/MLOps-Assign-1.git
+cd MLOps-Assign-1</pre>
+
+  <p><strong>2. Create a virtual environment and install dependencies</strong></p>
+<pre>python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt</pre>
+
+  <p><strong>3. Download the dataset</strong></p>
+<pre>python data/download_data.py
+# Saves: data/raw/heart_disease.csv  (303 rows, 14 columns)</pre>
+
+  <p><strong>4. Train models</strong></p>
+<pre>python src/train.py
+# Trains 4 models, logs to MLflow, saves best_model.joblib</pre>
+
+  <p><strong>5. Launch MLflow UI</strong></p>
+<pre>mlflow ui --port 5000
+# Open: http://localhost:5000</pre>
+
+  <p><strong>6. Run the REST API</strong></p>
+<pre>uvicorn api.main:app --reload --port 8000
+# Swagger docs: http://localhost:8000/docs</pre>
+
+  <p><strong>7. Run tests</strong></p>
+<pre>pytest tests/ -v --cov=src --cov=api</pre>
+
+  <!-- ════════════════════════════════════════════════════ 3. DATASET & EDA -->
+  <h2 class="section-title" id="s3">3. Dataset &amp; EDA Findings</h2>
+
+  <h3 class="sub-title">Dataset Summary</h3>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Source</td><td>UCI Machine Learning Repository – Heart Disease (ID: 45)</td></tr>
+    <tr><td>Total records</td><td>303</td></tr>
+    <tr><td>Total columns</td><td>14 (13 features + 1 target)</td></tr>
+    <tr><td>Target column</td><td><code>target</code> – binarised: 0 = No Disease, 1 = Disease</td></tr>
+    <tr><td>Class balance</td><td>~54% Disease (164), ~46% No Disease (139)</td></tr>
+    <tr><td>Missing values</td><td>Present in <code>ca</code> and <code>thal</code> columns (~1%)</td></tr>
+  </table>
+
+  <h3 class="sub-title">Feature Description</h3>
+  <table>
+    <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
+    <tr><td>age</td><td>Numerical</td><td>Age in years</td></tr>
+    <tr><td>trestbps</td><td>Numerical</td><td>Resting blood pressure (mm Hg)</td></tr>
+    <tr><td>chol</td><td>Numerical</td><td>Serum cholesterol (mg/dl)</td></tr>
+    <tr><td>thalach</td><td>Numerical</td><td>Maximum heart rate achieved</td></tr>
+    <tr><td>oldpeak</td><td>Numerical</td><td>ST depression induced by exercise</td></tr>
+    <tr><td>sex</td><td>Categorical</td><td>Sex (1=male, 0=female)</td></tr>
+    <tr><td>cp</td><td>Categorical</td><td>Chest pain type (0–3)</td></tr>
+    <tr><td>fbs</td><td>Categorical</td><td>Fasting blood sugar &gt; 120 mg/dl</td></tr>
+    <tr><td>restecg</td><td>Categorical</td><td>Resting ECG results (0–2)</td></tr>
+    <tr><td>exang</td><td>Categorical</td><td>Exercise-induced angina (1=yes)</td></tr>
+    <tr><td>slope</td><td>Categorical</td><td>Slope of peak exercise ST segment</td></tr>
+    <tr><td>ca</td><td>Categorical</td><td>Number of major vessels coloured (0–3)</td></tr>
+    <tr><td>thal</td><td>Categorical</td><td>Thalassemia type</td></tr>
+  </table>
+
+  <h3 class="sub-title">Key EDA Findings</h3>
+  <ul>
+    <li><strong>thalach</strong> (max heart rate) shows the strongest negative correlation with disease — patients with disease tend to have lower max heart rates.</li>
+    <li><strong>oldpeak</strong> (ST depression) shows positive correlation with disease presence.</li>
+    <li><strong>cp</strong> (chest pain type) is highly discriminative — type 0 (typical angina) strongly associated with disease.</li>
+    <li><strong>exang</strong> (exercise-induced angina) is a strong categorical predictor.</li>
+    <li><strong>chol</strong> shows weak correlation with the target, suggesting limited predictive power as a standalone feature.</li>
+    <li>Class balance is near 54/46 — no resampling required; stratified splits used.</li>
+    <li>Age distribution is right-skewed; older patients appear at higher risk.</li>
+  </ul>
+
+  <!-- ════════════════════════════════════════════════════ 4. FEATURE ENG & MODELLING -->
+  <h2 class="section-title" id="s4">4. Feature Engineering &amp; Modelling Choices</h2>
+
+  <h3 class="sub-title">Preprocessing Pipeline</h3>
+  <p>A scikit-learn <code>ColumnTransformer</code> is used to handle numerical and categorical
+  features independently, inside a full <code>Pipeline</code> to prevent data leakage.</p>
+
+  <table>
+    <tr><th>Step</th><th>Numerical Features</th><th>Categorical Features</th></tr>
+    <tr><td>Imputation</td><td>Mean imputation (<code>SimpleImputer(strategy="mean")</code>)</td><td>Most-frequent imputation</td></tr>
+    <tr><td>Scaling / Encoding</td><td>StandardScaler (zero mean, unit variance)</td><td>OneHotEncoder (<code>handle_unknown="ignore"</code>)</td></tr>
+  </table>
+
+  <h3 class="sub-title">Train / Test Split</h3>
+  <ul>
+    <li>Split ratio: <strong>75% train / 25% test</strong></li>
+    <li>Stratified on target class to preserve class balance in both sets</li>
+    <li>Random state: <strong>7</strong></li>
+    <li>Training samples: <strong>227</strong> &nbsp;|&nbsp; Test samples: <strong>76</strong></li>
+  </ul>
+
+  <h3 class="sub-title">Models Trained</h3>
+  <table>
+    <tr><th>Model</th><th>Hyperparameter Grid</th><th>Notes</th></tr>
+    <tr>
+      <td>Logistic Regression</td>
+      <td>C: [0.001, 0.01, 0.1, 1.0, 5.0]<br/>solver: [lbfgs, saga]<br/>penalty: [l2]<br/>max_iter: 2000</td>
+      <td>Interpretable baseline; fast convergence</td>
+    </tr>
+    <tr>
+      <td>Random Forest</td>
+      <td>n_estimators: [150, 300]<br/>max_depth: [None, 8, 15]<br/>min_samples_split: [2, 4]<br/>max_features: [sqrt, log2]</td>
+      <td>Ensemble; robust to outliers and feature scale</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>n_estimators: [150, 300]<br/>max_depth: [3, 6, 9]<br/>learning_rate: [0.01, 0.05, 0.1]<br/>subsample: [0.8, 1.0]</td>
+      <td>Gradient boosting; regularisation via subsample</td>
+    </tr>
+    <tr>
+      <td>Gradient Boosting</td>
+      <td>n_estimators: [100, 200]<br/>max_depth: [3, 5]<br/>learning_rate: [0.05, 0.1, 0.2]<br/>min_samples_split: [2, 5]</td>
+      <td>Scikit-learn native boosting; additional comparison model</td>
+    </tr>
+  </table>
+
+  <h3 class="sub-title">Cross-Validation Strategy</h3>
+  <p>
+    <strong>10-fold Stratified K-Fold</strong> cross-validation (<code>random_state=7</code>)
+    with <code>GridSearchCV</code> optimising for <code>roc_auc</code>.
+    After tuning, a second <code>cross_validate</code> call on the best estimator records
+    mean ± std for accuracy, F1, and ROC-AUC on the training set.
+  </p>
+
+  <h3 class="sub-title">Model Comparison – Test Set Results</h3>
+  <table>
+    <tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th></tr>
+    <tr class="highlight">
+      <td>Logistic Regression ✓</td><td>0.9211</td><td>0.9394</td><td>0.8857</td><td>0.9118</td><td>0.9554</td>
+    </tr>
+    <tr>
+      <td>Random Forest</td><td>0.8684</td><td>0.8378</td><td>0.8857</td><td>0.8611</td><td>0.9526</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td><td>0.8553</td><td>0.8750</td><td>0.8000</td><td>0.8358</td><td>0.9449</td>
+    </tr>
+    <tr>
+      <td>Gradient Boosting</td><td>0.7500</td><td>0.7353</td><td>0.7143</td><td>0.7246</td><td>0.8523</td>
+    </tr>
+  </table>
+  <p>✓ <strong>Best model: Logistic Regression</strong> selected by highest ROC-AUC (0.9554).</p>
+
+  <div class="metric-grid">
+    <div class="metric-card"><div class="val">0.9211</div><div class="label">Accuracy</div></div>
+    <div class="metric-card"><div class="val">0.9394</div><div class="label">Precision</div></div>
+    <div class="metric-card"><div class="val">0.8857</div><div class="label">Recall</div></div>
+    <div class="metric-card"><div class="val">0.9118</div><div class="label">F1 Score</div></div>
+    <div class="metric-card"><div class="val">0.9554</div><div class="label">ROC-AUC</div></div>
+  </div>
+
+  <h3 class="sub-title">Best Model – Classification Report</h3>
+<pre>              precision    recall  f1-score   support
+
+  No Disease       0.91      0.95      0.93        41
+     Disease       0.94      0.89      0.91        35
+
+    accuracy                           0.92        76
+   macro avg       0.92      0.92      0.92        76
+weighted avg       0.92      0.92      0.92        76
+
+Best params: {'C': 0.1, 'penalty': 'l2', 'solver': 'lbfgs'}</pre>
+
+  <!-- ════════════════════════════════════════════════════ 5. MLFLOW -->
+  <h2 class="section-title" id="s5">5. Experiment Tracking Summary (MLflow)</h2>
+
+  <p>
+    MLflow is used for full experiment tracking. Every <code>GridSearchCV</code> run is wrapped in
+    <code>mlflow.start_run()</code>. The following are recorded automatically:
+  </p>
+  <ul>
+    <li><strong>Parameters:</strong> best hyperparameters from grid search (e.g. C, solver, n_estimators, max_depth, learning_rate)</li>
+    <li><strong>Metrics:</strong> CV mean/std for accuracy, precision, recall, F1, ROC-AUC; test-set values for all five metrics</li>
+    <li><strong>Artifacts:</strong> confusion matrix PNG, ROC curve PNG, feature importance PNG, serialised sklearn pipeline</li>
+    <li><strong>Tags:</strong> <code>model_name</code> tag on each run for easy filtering</li>
+  </ul>
+
+  <h3 class="sub-title">Experiment Configuration</h3>
+  <table>
+    <tr><th>Setting</th><th>Value</th></tr>
+    <tr><td>Experiment name</td><td><code>heart-disease-classifier</code></td></tr>
+    <tr><td>Tracking URI</td><td>Local filesystem (<code>mlruns/</code>)</td></tr>
+    <tr><td>CV folds</td><td>10-fold Stratified K-Fold</td></tr>
+    <tr><td>Scoring metric</td><td>roc_auc</td></tr>
+    <tr><td>Total runs</td><td>4 (one per model)</td></tr>
+  </table>
+
+  <h3 class="sub-title">Launching MLflow UI</h3>
+<pre>mlflow ui --port 5000
+# Navigate to: http://localhost:5000
+# Experiment: heart-disease-classifier</pre>
+
+  <p>
+    The MLflow UI provides a side-by-side comparison of all four runs, sortable by any metric.
+    Artifact viewers allow inspection of plots and the serialised model directly in the browser.
+  </p>
+
+  <!-- ════════════════════════════════════════════════════ 6. PACKAGING -->
+  <h2 class="section-title" id="s6">6. Model Packaging &amp; Reproducibility</h2>
+
+  <h3 class="sub-title">Model Serialisation</h3>
+  <p>
+    The best pipeline (preprocessor + classifier) is serialised with <code>joblib</code> to
+    <code>models/best_model.joblib</code>. The full sklearn <code>Pipeline</code> object is saved,
+    which means the same preprocessing steps used at training time are automatically applied at
+    inference — preventing any train/serve skew.
+  </p>
+
+  <h3 class="sub-title">Model Metadata</h3>
+  <p>A <code>models/model_metadata.json</code> file is written alongside the model:</p>
+<pre>{
+  "model_name": "LogisticRegression",
+  "metrics": {
+    "accuracy": 0.9211,
+    "precision": 0.9394,
+    "recall": 0.8857,
+    "f1": 0.9118,
+    "roc_auc": 0.9554
+  },
+  "num_features": ["age", "trestbps", "chol", "thalach", "oldpeak"],
+  "cat_features": ["sex", "cp", "fbs", "restecg", "exang", "slope", "ca", "thal"]
+}</pre>
+
+  <h3 class="sub-title">Reproducibility Measures</h3>
+  <ul>
+    <li>All random states fixed: <code>RANDOM_STATE = 7</code></li>
+    <li>Pinned dependency versions in <code>requirements.txt</code></li>
+    <li>Deterministic data split via <code>train_test_split(..., random_state=7, stratify=y)</code></li>
+    <li>Pipeline includes preprocessor + model in a single <code>joblib</code> artifact</li>
+    <li>MLflow logs every run's parameters, metrics, and artifacts for full audit trail</li>
+    <li>Model also registered via <code>mlflow.sklearn.log_model()</code> for MLflow Model Registry compatibility</li>
+  </ul>
+
+  <!-- ════════════════════════════════════════════════════ 7. API -->
+  <h2 class="section-title" id="s7">7. API Design</h2>
+
+  <p>
+    The model is served via a <strong>FastAPI</strong> application (<code>api/main.py</code>).
+    The model pipeline is loaded once at startup using FastAPI's <code>lifespan</code> context manager.
+  </p>
+
+  <h3 class="sub-title">Endpoints</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+    <tr><td>GET</td><td><code>/health</code></td><td>Liveness check; returns model load status</td></tr>
+    <tr><td>GET</td><td><code>/metrics</code></td><td>Prometheus metrics (text format)</td></tr>
+    <tr><td>POST</td><td><code>/predict</code></td><td>Single-record heart disease prediction</td></tr>
+    <tr><td>POST</td><td><code>/predict/batch</code></td><td>Batch prediction (list of patients)</td></tr>
+    <tr><td>GET</td><td><code>/docs</code></td><td>Auto-generated Swagger UI</td></tr>
+  </table>
+
+  <h3 class="sub-title">Request Schema (POST /predict)</h3>
+<pre>curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "age": 63, "sex": 1, "cp": 3, "trestbps": 145, "chol": 233,
+    "fbs": 1, "restecg": 0, "thalach": 150, "exang": 0,
+    "oldpeak": 2.3, "slope": 0, "ca": 0, "thal": 1
+  }'</pre>
+
+  <h3 class="sub-title">Response Schema</h3>
+<pre>{
+  "prediction": 1,
+  "label": "Heart Disease",
+  "confidence": 0.8712,
+  "probabilities": {
+    "no_disease": 0.1288,
+    "disease": 0.8712
+  }
+}</pre>
+
+  <h3 class="sub-title">API Design Decisions</h3>
+  <ul>
+    <li><strong>Pydantic v2 validation</strong> ensures all input fields are typed and bounded before inference.</li>
+    <li><strong>503 response</strong> when model is not loaded (e.g. missing <code>best_model.joblib</code>).</li>
+    <li><strong>Structured logging</strong> via Python's <code>logging</code> module with timestamp, level, and module prefix.</li>
+    <li><strong>Optional features</strong> (<code>slope</code>, <code>ca</code>, <code>thal</code>) allow partial inputs; pipeline imputer handles missing values at serve time.</li>
+  </ul>
+
+  <!-- ════════════════════════════════════════════════════ 8. ARCHITECTURE -->
+  <h2 class="section-title" id="s8">8. System Architecture Diagram</h2>
+
+  <div class="arch-box">
+<pre>
+┌─────────────────────────────────────────────────────────────────────┐
+│                         DATA LAYER                                  │
+│   UCI Repository  ──►  download_data.py  ──►  data/raw/heart_disease.csv │
+└───────────────────────────────┬─────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       TRAINING LAYER                                │
+│                                                                     │
+│   src/data_processing.py                                            │
+│     ColumnTransformer (mean imputer + StandardScaler + OneHotEncoder)│
+│                       │                                             │
+│   src/train.py        ▼                                             │
+│     GridSearchCV (10-fold StratifiedKFold, scoring=roc_auc)         │
+│       ├── LogisticRegression  ◄── Best: ROC-AUC 0.9554              │
+│       ├── RandomForest                                              │
+│       ├── XGBoost                                                   │
+│       └── GradientBoosting                                          │
+│                       │                                             │
+│              MLflow Tracking ──► mlruns/                            │
+│              joblib.dump  ──► models/best_model.joblib              │
+└───────────────────────────────┬─────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        SERVING LAYER                                │
+│                                                                     │
+│   api/main.py (FastAPI + Uvicorn)                                   │
+│     GET  /health        ──► liveness check                          │
+│     POST /predict       ──► single inference                        │
+│     POST /predict/batch ──► batch inference                         │
+│     GET  /metrics       ──► Prometheus scrape endpoint              │
+└───────────────────────────────┬─────────────────────────────────────┘
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+                    ▼                       ▼
+         ┌─────────────────┐    ┌──────────────────────┐
+         │   MONITORING    │    │   CONTAINERISATION   │
+         │                 │    │                      │
+         │  Prometheus     │    │  Dockerfile          │
+         │  (port 9090)    │    │  docker-compose.yml  │
+         │       │         │    │  k8s/deployment.yaml │
+         │       ▼         │    │  k8s/service.yaml    │
+         │  Grafana        │    │  replicas: 2         │
+         │  (port 3000)    │    └──────────────────────┘
+         └─────────────────┘
+                    │
+                    ▼
+         ┌─────────────────────┐
+         │    CI/CD LAYER      │
+         │  GitHub Actions     │
+         │  lint → test →      │
+         │  train → docker     │
+         └─────────────────────┘
+</pre>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ 9. CI/CD -->
+  <h2 class="section-title" id="s9">9. CI/CD Pipeline</h2>
+
+  <p>
+    The CI/CD pipeline is defined in <code>.github/workflows/ci-cd.yml</code> and triggers on
+    every push or pull request to <code>main</code> / <code>develop</code>.
+  </p>
+
+  <h3 class="sub-title">Pipeline Stages</h3>
+  <table>
+    <tr><th>Stage</th><th>Tool</th><th>What it does</th></tr>
+    <tr>
+      <td><span class="badge badge-blue">1. Lint</span></td>
+      <td>flake8</td>
+      <td>Static analysis on <code>src/</code>, <code>api/</code>, <code>tests/</code>. Max line length 120. Fails fast before tests run.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">2. Test</span></td>
+      <td>pytest + pytest-cov</td>
+      <td>Unit and integration tests with coverage report (XML + terminal). Uploads <code>coverage.xml</code> as artifact. Needs lint to pass.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-orange">3. Train</span></td>
+      <td>python src/train.py</td>
+      <td>Downloads dataset, trains all 4 models, logs to MLflow. Uploads <code>best_model.joblib</code>, <code>model_metadata.json</code>, and <code>mlruns/</code> as artifacts. Needs tests to pass.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-green">4. Docker Build &amp; Test</span></td>
+      <td>Docker CLI + curl</td>
+      <td>Builds Docker image, runs container, waits for <code>/health</code> readiness, tests <code>/predict</code> endpoint. Collects logs on failure. Needs training to pass.</td>
+    </tr>
+  </table>
+
+  <h3 class="sub-title">Pipeline YAML (key excerpt)</h3>
+<pre>on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint   → test → train → docker-build   # sequential dependency chain
+
+  # Stage 3: Train
+  - name: Download dataset
+    run: python data/download_data.py
+  - name: Train models
+    run: python src/train.py
+  - name: Upload trained model artifact
+    uses: actions/upload-artifact@v4
+    with:
+      name: trained-model
+      path: |
+        models/best_model.joblib
+        models/model_metadata.json</pre>
+
+  <!-- ════════════════════════════════════════════════════ 10. CONTAINERISATION -->
+  <h2 class="section-title" id="s10">10. Containerisation &amp; Deployment</h2>
+
+  <h3 class="sub-title">Docker</h3>
+  <p>Base image: <code>python:3.11-slim</code>. Layers are ordered for cache efficiency
+  (dependencies installed before source copy).</p>
+<pre># Build
+docker build -t heart-disease-api:latest .
+
+# Run standalone
+docker run -p 8000:8000 heart-disease-api:latest
+
+# Full stack (API + Prometheus + Grafana)
+docker-compose up --build</pre>
+
+  <table>
+    <tr><th>Service</th><th>Port</th><th>Description</th></tr>
+    <tr><td>heart-disease-api</td><td>8000</td><td>FastAPI prediction service</td></tr>
+    <tr><td>prometheus</td><td>9090</td><td>Metrics collection; retention 7 days</td></tr>
+    <tr><td>grafana</td><td>3000</td><td>Dashboard; default password: admin</td></tr>
+  </table>
+
+  <h3 class="sub-title">Kubernetes Deployment</h3>
+  <p>Deployment manifest (<code>k8s/deployment.yaml</code>) provisions 2 replicas with
+  liveness and readiness probes on <code>/health</code>.</p>
+<pre># Start Minikube
+minikube start
+
+# Build image inside Minikube
+eval $(minikube docker-env)
+docker build -t heart-disease-api:latest .
+
+# Deploy
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+
+# Get URL
+minikube service heart-disease-api-service --url</pre>
+
+  <h3 class="sub-title">Kubernetes Resource Limits</h3>
+  <table>
+    <tr><th></th><th>Memory</th><th>CPU</th></tr>
+    <tr><td>Requests</td><td>256 Mi</td><td>250m</td></tr>
+    <tr><td>Limits</td><td>512 Mi</td><td>500m</td></tr>
+  </table>
+
+  <h3 class="sub-title">Probe Configuration</h3>
+  <ul>
+    <li><strong>Liveness probe:</strong> GET <code>/health</code>, initial delay 15s, period 20s</li>
+    <li><strong>Readiness probe:</strong> GET <code>/health</code>, initial delay 5s, period 10s</li>
+  </ul>
+
+  <!-- ════════════════════════════════════════════════════ 11. MONITORING -->
+  <h2 class="section-title" id="s11">11. Monitoring &amp; Logging</h2>
+
+  <h3 class="sub-title">Prometheus Metrics</h3>
+  <p>Three custom metrics are exposed at <code>GET /metrics</code> (scraped by Prometheus every 15s):</p>
+  <table>
+    <tr><th>Metric Name</th><th>Type</th><th>Labels</th><th>Description</th></tr>
+    <tr><td><code>api_requests_total</code></td><td>Counter</td><td>endpoint, method, status</td><td>Total API requests by endpoint, method, and HTTP status</td></tr>
+    <tr><td><code>api_request_latency_seconds</code></td><td>Histogram</td><td>endpoint</td><td>Request latency in seconds per endpoint</td></tr>
+    <tr><td><code>predictions_total</code></td><td>Counter</td><td>label</td><td>Total predictions made, broken down by "Heart Disease" / "No Heart Disease"</td></tr>
+  </table>
+
+  <h3 class="sub-title">Prometheus Scrape Config</h3>
+<pre>global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "heart-disease-api"
+    static_configs:
+      - targets: ["api:8000"]
+    metrics_path: /metrics</pre>
+
+  <h3 class="sub-title">Grafana</h3>
+  <p>
+    Grafana is included in the Docker Compose stack, accessible at
+    <code>http://localhost:3000</code>. Add Prometheus as a data source
+    (<code>http://prometheus:9090</code>) and build dashboards from the three metric series above.
+    Useful panels:
+  </p>
+  <ul>
+    <li>Request rate per endpoint (rate of <code>api_requests_total</code>)</li>
+    <li>P95/P99 latency histogram (from <code>api_request_latency_seconds</code>)</li>
+    <li>Prediction class distribution over time (<code>predictions_total</code>)</li>
+    <li>Error rate (status=5xx / total requests)</li>
+  </ul>
+
+  <h3 class="sub-title">Application Logging</h3>
+  <p>
+    Python's standard <code>logging</code> module is configured at <code>INFO</code> level with
+    the format <code>timestamp | LEVEL | module | message</code>. Key events logged:
+  </p>
+  <ul>
+    <li>Model load at startup (path + success/failure)</li>
+    <li>Each prediction (label + confidence)</li>
+    <li>Batch prediction summary (record count)</li>
+    <li>Prediction errors (exception message)</li>
+    <li>API shutdown</li>
+  </ul>
+
+  <!-- ════════════════════════════════════════════════════ 12. REPO -->
+  <h2 class="section-title" id="s12">12. Repository Link</h2>
+
+  <p>
+    <strong>GitHub Repository:</strong>
+    <a href="https://github.com/Sunil-Kumar-2024ac05659/MLOps-Assign-1" target="_blank">
+      https://github.com/Sunil-Kumar-2024ac05659/MLOps-Assign-1
+    </a>
+  </p>
+
+  <h3 class="sub-title">Repository Structure</h3>
+<pre>MLOps-Assign-1/
+├── data/
+│   ├── download_data.py          # UCI dataset download script
+│   └── raw/heart_disease.csv     # 303 rows, 14 columns
+├── src/
+│   ├── data_processing.py        # ColumnTransformer preprocessing pipeline
+│   ├── train.py                  # 4-model training + MLflow tracking
+│   └── inference.py              # load_model() + predict() utilities
+├── api/
+│   └── main.py                   # FastAPI app with Prometheus metrics
+├── tests/
+│   ├── conftest.py
+│   ├── test_data_processing.py
+│   ├── test_inference.py
+│   └── test_api.py
+├── notebooks/
+│   ├── 01_eda.ipynb              # EDA with correlation, boxplots, distributions
+│   └── 02_model_training.ipynb   # Training walkthrough with MLflow
+├── models/
+│   ├── best_model.joblib         # Serialised best pipeline
+│   ├── model_metadata.json       # Metrics + feature schema
+│   └── tmp_plots/                # Confusion matrices, ROC curves, feature importances
+├── k8s/
+│   ├── deployment.yaml           # 2 replicas, probes, resource limits
+│   └── service.yaml
+├── monitoring/
+│   └── prometheus.yml            # Scrape config
+├── .github/workflows/
+│   └── ci-cd.yml                 # lint → test → train → docker pipeline
+├── Dockerfile                    # python:3.11-slim, HEALTHCHECK
+├── docker-compose.yml            # API + Prometheus + Grafana
+└── requirements.txt              # Pinned dependencies</pre>
+
+  <hr/>
+  <p style="text-align:center; color:#888; font-size:11px;">
+    MLOps Assignment 01 &nbsp;|&nbsp; BITS Pilani AIMLCZG523 &nbsp;|&nbsp; Sunil Kumar (2024ac05659)
+  </p>
+
+</div>
+</body>
+</html>
